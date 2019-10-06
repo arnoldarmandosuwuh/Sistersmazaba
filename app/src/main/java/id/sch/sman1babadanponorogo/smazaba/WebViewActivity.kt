@@ -30,7 +30,10 @@ class WebViewActivity : AppCompatActivity() {
 
         val myWebView: WebView = findViewById(R.id.webview)
         myWebView.loadUrl(url)
-        myWebView.settings.javaScriptEnabled = true
+
+        val webViewSetting = myWebView.settings
+
+        myWebViewSetting.javaScriptEnabled = true
         myWebView.settings.allowFileAccess = true
         myWebView.settings.allowFileAccessFromFileURLs = true
         myWebView.settings.allowUniversalAccessFromFileURLs = true
