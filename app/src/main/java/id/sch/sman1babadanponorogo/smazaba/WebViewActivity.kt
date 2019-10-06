@@ -33,11 +33,11 @@ class WebViewActivity : AppCompatActivity() {
 
         val webViewSetting = myWebView.settings
 
-        myWebViewSetting.javaScriptEnabled = true
-        myWebView.settings.allowFileAccess = true
-        myWebView.settings.allowFileAccessFromFileURLs = true
-        myWebView.settings.allowUniversalAccessFromFileURLs = true
-        myWebView.settings.domStorageEnabled = true
+        webViewSetting.javaScriptEnabled = true
+        webViewSetting.allowFileAccess = true
+        webViewSetting.allowFileAccessFromFileURLs = true
+        webViewSetting.allowUniversalAccessFromFileURLs = true
+        webViewSetting.domStorageEnabled = true
         myWebView.webViewClient = MyWebViewClient()
 
         myWebView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
