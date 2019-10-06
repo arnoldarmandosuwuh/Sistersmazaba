@@ -6,16 +6,19 @@
 
     <supports-screens
         android:anyDensity="true"
-        android:resizeable="true"
-        android:smallScreens="true"
         android:largeScreens="true"
         android:normalScreens="true"
-        android:xlargeScreens="true"/>
+        android:resizeable="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:remove="android:maxSdkVersion" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:remove="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -24,8 +27,16 @@
         android:roundIcon="@drawable/sistersmazaba"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="id.sch.sman1babadanponorogo.smazaba.WebViewActivity"></activity>
-        <activity android:name="id.sch.sman1babadanponorogo.smazaba.MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".WebViewActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".SplashActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
