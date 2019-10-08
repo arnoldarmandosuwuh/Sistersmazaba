@@ -19,7 +19,7 @@
         android:id="@+id/msw_progress"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="3dip"
+        android:layout_height="10dip"
         android:layout_marginBottom="32dp"
         android:progressDrawable="@drawable/progress_style"
         android:visibility="visible"

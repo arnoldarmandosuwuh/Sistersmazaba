@@ -28,8 +28,11 @@ class WebViewActivity : AppCompatActivity() {
     private val PermissionRequestCode = 123
     private lateinit var managePermissions: ManagePermissions
     var siteUrl: String? = null
+    private var mCM: String? = null
+    private var mUM: ValueCallback<Uri>? = null
+    private var filePath: ValueCallback<Array<Uri>>? = null
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "OverridingDeprecatedMember")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web_view)
@@ -45,6 +48,7 @@ class WebViewActivity : AppCompatActivity() {
         val myWebView: WebView = findViewById(R.id.webview)
         myWebView.loadUrl(siteUrl)
 
+        CookieManager.getInstance().acceptCookie()
         val webViewSetting = myWebView.settings
 
         webViewSetting.setAppCacheEnabled(true)
@@ -61,28 +65,51 @@ class WebViewActivity : AppCompatActivity() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 msw_progress.progress = newProgress
             }
+
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                if(filePath != null){
+                    filePath!!.onReceiveValue(null)
+                }
+
+                filePath = filePathCallback
+
+                val contentSelectionIntent = Intent(Intent.ACTION_GET_CONTENT)
+                contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE)
+                contentSelectionIntent.type = "*/*"
+
+                val intent = Intent(Intent.ACTION_GET_CONTENT)
+                intent.setType("*/*")
+                val PICKFILE_REQUEST_CODE = 100
+                startActivityForResult(intent, PICKFILE_REQUEST_CODE)
+                return false
+            }
         }
 
-        myWebView.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+        myWebView.setDownloadListener (DownloadListener{ url, userAgent, contentDescription, mimetype, contentLength ->
+
+
 
                 val request = DownloadManager.Request(Uri.parse(url))
-
                 val cookies = CookieManager.getInstance().getCookie(url)
 
                 request.addRequestHeader("cookie", cookies)
                 request.addRequestHeader("User-Agent", userAgent)
-                request.setDescription("Downloading file...")
+                request.setDescription("Sistersmazaba")
                 request.setMimeType(mimetype)
-                request.allowScanningByMediaScanner()
+//                request.allowScanningByMediaScanner()
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
 
-                val fileName = URLUtil.guessFileName(url, contentDisposition, mimetype)
+                val fileName = URLUtil.guessFileName(url, contentDescription, mimetype)
 
                 request.setDestinationInExternalPublicDir(
                     Environment.DIRECTORY_DOWNLOADS,
                     fileName
                 )
-                request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype))
+                request.setTitle(URLUtil.guessFileName(url, contentDescription, mimetype))
 
                 request.setAllowedOverMetered(true)
                 request.setAllowedOverRoaming(false)
@@ -90,12 +117,12 @@ class WebViewActivity : AppCompatActivity() {
                     request.setRequiresCharging(false)
                     request.setRequiresDeviceIdle(false)
                 }
-                request.setVisibleInDownloadsUi(true)
+//                request.setVisibleInDownloadsUi(true)
                 val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
                 dm.enqueue(request)
                 Toast.makeText(applicationContext, "Downloading File", Toast.LENGTH_LONG).show()
 
-        }
+        })
     }
 
     override fun onRequestPermissionsResult(
