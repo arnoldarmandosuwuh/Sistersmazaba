@@ -1,12 +1,14 @@
 package id.sch.sman1babadanponorogo.smazaba
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
@@ -16,22 +18,28 @@ import android.webkit.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import id.sch.sman1babadanponorogo.smazaba.util.ManagePermissions
 import kotlinx.android.synthetic.main.activity_web_view.*
 
 const val EXTRA_URL = "extra_url"
 
 class WebViewActivity : AppCompatActivity() {
 
-    companion object {
-        private val file_perm = 1
-    }
+    private val PermissionRequestCode = 123
+    private lateinit var managePermissions: ManagePermissions
+    var siteUrl: String? = null
 
-    lateinit var siteUrl: String
-
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web_view)
 
+        val list = listOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        managePermissions = ManagePermissions(this,list,PermissionRequestCode)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            managePermissions.checkPermissions()
+        }
         siteUrl = intent.getStringExtra(EXTRA_URL)
 
         val myWebView: WebView = findViewById(R.id.webview)
@@ -49,61 +57,64 @@ class WebViewActivity : AppCompatActivity() {
         webViewSetting.domStorageEnabled = true
         myWebView.webViewClient = MyWebViewClient()
 
-        myWebView.webChromeClient = object: WebChromeClient(){
+        myWebView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 msw_progress.progress = newProgress
             }
         }
 
-        myWebView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
+        myWebView.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
 
-            if (!check_permission(1)) {
-                ActivityCompat.requestPermissions(
-                    this@WebViewActivity,
-                    arrayOf(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ),
-                    file_perm
-                )
-            } else {
                 val request = DownloadManager.Request(Uri.parse(url))
-                request.setMimeType(mimetype)
-                request.addRequestHeader("cookie", CookieManager.getInstance().getCookie(url))
+
+                val cookies = CookieManager.getInstance().getCookie(url)
+
+                request.addRequestHeader("cookie", cookies)
                 request.addRequestHeader("User-Agent", userAgent)
                 request.setDescription("Downloading file...")
-                request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype))
-                request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+                request.setMimeType(mimetype)
                 request.allowScanningByMediaScanner()
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                request.setDestinationInExternalFilesDir(this@WebViewActivity,
+
+                val fileName = URLUtil.guessFileName(url, contentDisposition, mimetype)
+
+                request.setDestinationInExternalPublicDir(
                     Environment.DIRECTORY_DOWNLOADS,
-                    URLUtil.guessFileName(url, contentDisposition, mimetype)
+                    fileName
                 )
+                request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype))
+
+                request.setAllowedOverMetered(true)
+                request.setAllowedOverRoaming(false)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    request.setRequiresCharging(false)
+                    request.setRequiresDeviceIdle(false)
+                }
+                request.setVisibleInDownloadsUi(true)
                 val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
                 dm.enqueue(request)
                 Toast.makeText(applicationContext, "Downloading File", Toast.LENGTH_LONG).show()
-            }
+
         }
     }
 
-
-    fun check_permission(permission: Int): Boolean {
-        when (permission) {
-            1 -> return ContextCompat.checkSelfPermission(
-                this@WebViewActivity,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
-            2 -> return ContextCompat.checkSelfPermission(
-                this@WebViewActivity,
-                Manifest.permission.INTERNET
-            ) == PackageManager.PERMISSION_GRANTED
-            3 -> return ContextCompat.checkSelfPermission(
-                this@WebViewActivity,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        when(requestCode){
+            PermissionRequestCode ->{
+                val isPermissionsGranted = managePermissions.processPermissionsResult(requestCode, permissions, grantResults)
+                if(isPermissionsGranted){
+                    // Do the task now
+                    toast("Permission(s) granted.")
+                }else{
+                    toast("Permission(s) denied.")
+                }
+                return
+            }
         }
-        return false
     }
 
     private inner class MyWebViewClient : WebViewClient() {
@@ -114,11 +125,10 @@ class WebViewActivity : AppCompatActivity() {
         }
 
         override fun shouldOverrideUrlLoading(view: WebView, Url: String): Boolean {
-            if(Url.contains("sman1babadanponorogo.sch.id")){
+            if (Url.contains("sman1babadanponorogo.sch.id")) {
                 view.loadUrl(Url)
                 return true
-            }
-            else {
+            } else {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Url))
                 startActivity(intent)
                 return true
@@ -142,10 +152,15 @@ class WebViewActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webview.canGoBack()){
+        if (keyCode == KeyEvent.KEYCODE_BACK && webview.canGoBack()) {
             webview.goBack()
             return true
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    // Extension function to show toast message
+    fun Context.toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

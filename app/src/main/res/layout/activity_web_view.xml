@@ -20,7 +20,7 @@
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="fill_parent"
         android:layout_height="3dip"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="32dp"
         android:progressDrawable="@drawable/progress_style"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
