@@ -14,17 +14,15 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:remove="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-<!--    <uses-permission android:name="android.permission.CAMERA" />-->
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/logosistersmazabaapp"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/sistersmazaba"
+        android:roundIcon="@drawable/logosistersmazabaapp"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
@@ -32,8 +30,7 @@
             android:screenOrientation="portrait"></activity>
         <activity
             android:name=".WebViewActivity"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"></activity>
         <activity
             android:name=".SplashActivity"
             android:screenOrientation="portrait">
