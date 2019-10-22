@@ -11,8 +11,8 @@ android {
         applicationId "id.sch.sman1babadanponorogo.smazaba"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 4
-        versionName "4.1"
+        versionCode 5
+        versionName "4.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
